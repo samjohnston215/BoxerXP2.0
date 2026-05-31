@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BoxerXP 2.0">
   <title>BOXER XP 2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Squada+One&display=swap" rel="stylesheet">
   
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
@@ -262,107 +263,107 @@
 
 <div class="nav">
   <button class="nav-btn on" id="tab-daily" onclick="goTab('daily')">Quests</button>
-  <button class="nav-btn" id=\"tab-stats\" onclick=\"goTab('stats')\">Status</button>
-  <button class=\"nav-btn\" id=\"tab-weight\" onclick=\"goTab('weight')\">Logs</button>
-  <button class=\"nav-btn\" id=\"tab-ranks\" onclick=\"goTab('ranks')\">System</button>
-  <button class=\"nav-btn\" id=\"tab-awards\" onclick=\"goTab('awards')\">Titles</button>
+  <button class="nav-btn" id="tab-stats" onclick="goTab('stats')">Status</button>
+  <button class="nav-btn" id="tab-weight" onclick="goTab('weight')">Logs</button>
+  <button class="nav-btn" id="tab-ranks" onclick="goTab('ranks')">System</button>
+  <button class="nav-btn" id="tab-awards" onclick="goTab('awards')">Titles</button>
 </div>
 
 <!-- PAGE: DAILY -->
-<div id=\"page-daily\" class=\"page on\">
-  <div class=\"timer-box\">
-    <div class=\"timer-status\" id=\"timerStatus\">BOXING TIMER IDLE</div>
-    <div class=\"timer-display\" id=\"timerDisplay\">03:00</div>
-    <div class=\"timer-row\">
-      <button class=\"timer-btn\" id=\"timerToggleBtn\" onclick=\"toggleTimer()\">Start Round</button>
-      <button class=\"timer-btn\" onclick=\"resetTimer()\">Reset</button>
+<div id="page-daily" class="page on">
+  <div class="timer-box">
+    <div class="timer-status" id="timerStatus">BOXING TIMER IDLE</div>
+    <div class="timer-display" id="timerDisplay">03:00</div>
+    <div class="timer-row">
+      <button class="timer-btn" id="timerToggleBtn" onclick="toggleTimer()">Start Round</button>
+      <button class="timer-btn" onclick="resetTimer()">Reset</button>
     </div>
-    <div class=\"combo-count\" id=\"comboCount\">COMBOS: 0</div>
-    <div class=\"timer-config\">
-      <label>WORK (s): <input type=\"number\" id=\"workSec\" value=\"180\" min=\"10\" max=\"600\"></label>
-      <label>REST (s): <input type=\"number\" id=\"restSec\" value=\"60\" min=\"5\" max=\"300\"></label>
-      <button class=\"util-btn\" onclick=\"applyTimerConfig()\">Apply</button>
+    <div class="combo-count" id="comboCount">COMBOS: 0</div>
+    <div class="timer-config">
+      <label>WORK (s): <input type="number" id="workSec" value="180" min="10" max="600"></label>
+      <label>REST (s): <input type="number" id="restSec" value="60" min="5" max="300"></label>
+      <button class="util-btn" onclick="applyTimerConfig()">Apply</button>
     </div>
   </div>
 
-  <div class=\"gatekeeper\" id=\"gatePanel\">
-    <h2 style=\"color:var(--red);margin-bottom:8px;\">⚠️ SKILL TEST DETECTED</h2>
-    <p style=\"font-size:.88rem;margin-bottom:14px;color:var(--dim);\">You've hit the XP ceiling for this rank. Pass your division's physical test with a trainer to advance.</p>
-    <button class=\"util-btn\" style=\"width:100%;border-color:var(--green);color:var(--green);padding:12px;\" onclick=\"passGate()\">LOG TEST AS PASSED</button>
+  <div class="gatekeeper" id="gatePanel">
+    <h2 style="color:var(--red);margin-bottom:8px;">⚠️ SKILL TEST DETECTED</h2>
+    <p style="font-size:.88rem;margin-bottom:14px;color:var(--dim);">You've hit the XP ceiling for this rank. Pass your division's physical test with a trainer to advance.</p>
+    <button class="util-btn" style="width:100%;border-color:var(--green);color:var(--green);padding:12px;" onclick="passGate()">LOG TEST AS PASSED</button>
   </div>
 
-  <div class=\"locked-banner\" id=\"lockedBanner\">✅ SESSION LOCKED IN — STATS UPDATED</div>
+  <div class="locked-banner" id="lockedBanner">✅ SESSION LOCKED IN — STATS UPDATED</div>
 
-  <div class=\"panel\">
-    <div class=\"panel-hdr\">
-      <span class=\"panel-title\">Daily Quest Log</span>
-      <button class=\"util-btn\" onclick=\"selectAll()\">[ Select All ]</button>
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">Daily Quest Log</span>
+      <button class="util-btn" onclick="selectAll()">[ Select All ]</button>
     </div>
-    <div id=\"taskList\"></div>
-    <button class=\"lock-btn\" id=\"lockBtn\" onclick=\"promptLock()\">🔒 LOCK IN SESSION & APPLY STAT GAINS</button>
+    <div id="taskList"></div>
+    <button class="lock-btn" id="lockBtn" onclick="promptLock()">🔒 LOCK IN SESSION & APPLY STAT GAINS</button>
   </div>
 
-  <div class=\"panel\">
-    <div class=\"panel-hdr\">
-      <span class=\"panel-title\">System Notifications</span>
-      <span id=\"sessionTotal\" style=\"font-size:.78rem;color:var(--green);\"></span>
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">System Notifications</span>
+      <span id="sessionTotal" style="font-size:.78rem;color:var(--green);"></span>
     </div>
-    <div id=\"sessionLog\"><span style=\"color:var(--dim);font-size:.76rem;\">No tasks completed yet.</span></div>
+    <div id="sessionLog"><span style="color:var(--dim);font-size:.76rem;">No tasks completed yet.</span></div>
   </div>
 </div>
 
 <!-- PAGE: STATS -->
-<div id=\"page-stats\" class=\"page\">
-  <div class=\"panel\">
-    <div class=\"panel-hdr\"><span class=\"panel-title\">Status Window</span></div>
-    <div class=\"archetype\" id=\"archetype\">STYLE: BALANCE HYBRID</div>
-    <div class=\"radar-wrap\"><canvas id=\"radar\" width=\"230\" height=\"230\"></canvas></div>
-    <div class=\"points-bank\">AVAILABLE POINTS: <span id=\"ptsDisplay\">0</span></div>
-    <div id=\"statRows\"></div>
-    <div class=\"refund-wrap\">
-      <button class=\"refund-btn\" onclick=\"reallocate()\">[ ↺ Reset & Reallocate Points ]</button>
+<div id="page-stats" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Status Window</span></div>
+    <div class="archetype" id="archetype">STYLE: BALANCE HYBRID</div>
+    <div class="radar-wrap"><canvas id="radar" width="230" height="230"></canvas></div>
+    <div class="points-bank">AVAILABLE POINTS: <span id="ptsDisplay">0</span></div>
+    <div id="statRows"></div>
+    <div class="refund-wrap">
+      <button class="refund-btn" onclick="reallocate()">[ ↺ Reset & Reallocate Points ]</button>
     </div>
   </div>
 </div>
 
 <!-- PAGE: WEIGHT -->
-<div id=\"page-weight\" class=\"page\">
-  <div class=\"panel\">
-    <div class=\"panel-hdr\"><span class=\"panel-title\">Biometric Logs</span></div>
-    <div class=\"w-input-row\">
-      <input type=\"number\" step=\"0.1\" class=\"w-input\" id=\"wInput\" placeholder=\"0.0\" onblur=\"scrollTop()\">
-      <button class=\"w-submit\" onclick=\"logWeight()\">Log Weight</button>
+<div id="page-weight" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Biometric Logs</span></div>
+    <div class="w-input-row">
+      <input type="number" step="0.1" class="w-input" id="wInput" placeholder="0.0" onblur="scrollTop()">
+      <button class="w-submit" onclick="logWeight()">Log Weight</button>
     </div>
-    <div class=\"w-quick\">
-      <button class=\"w-quick-btn\" onclick=\"quickW(-5)\">-5 LBS</button>
-      <button class=\"w-quick-btn\" onclick=\"quickW(-1)\">-1 LB</button>
-      <button class=\"w-quick-btn\" onclick=\"quickW(1)\">+1 LB</button>
-      <button class=\"w-quick-btn\" onclick=\"quickW(5)\">+5 LBS</button>
+    <div class="w-quick">
+      <button class="w-quick-btn" onclick="quickW(-5)">-5 LBS</button>
+      <button class="w-quick-btn" onclick="quickW(-1)">-1 LB</button>
+      <button class="w-quick-btn" onclick="quickW(1)">+1 LB</button>
+      <button class="w-quick-btn" onclick="quickW(5)">+5 LBS</button>
     </div>
-    <div class=\"sparkline-wrap\"><canvas id=\"sparkline\" width=\"300\" height=\"80\"></canvas></div>
-    <div id=\"wList\" style=\"margin-top:10px;\"></div>
+    <div class="sparkline-wrap"><canvas id="sparkline" width="300" height="80"></canvas></div>
+    <div id="wList" style="margin-top:10px;"></div>
   </div>
 </div>
 
 <!-- PAGE: RANKS -->
-<div id=\"page-ranks\" class=\"page\">
-  <div class=\"panel\" id=\"syllabusPanel\">
-    <div class=\"panel-hdr\"><span class=\"panel-title\">System Progression</span></div>
+<div id="page-ranks" class="page">
+  <div class="panel" id="syllabusPanel">
+    <div class="panel-hdr"><span class="panel-title">System Progression</span></div>
   </div>
-  <div class=\"panel\">
-    <div class=\"panel-hdr\"><span class=\"panel-title\">Save Data</span></div>
-    <button class=\"util-btn\" style=\"width:100%;margin-bottom:6px;\" onclick=\"exportSave()\">[ Export Save ]</button>
-    <button class=\"util-btn\" style=\"width:100%;margin-bottom:6px;\" onclick=\"showImport()\">[ Import Save ]</button>
-    <textarea class=\"save-area\" id=\"saveArea\" placeholder=\"Paste JSON here...\"></textarea>
-    <button class=\"util-btn\" id=\"importBtn\" style=\"width:100%;display:none;\" onclick=\"importSave()\">[ Confirm Import ]</button>
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Save Data</span></div>
+    <button class="util-btn" style="width:100%;margin-bottom:6px;" onclick="exportSave()">[ Export Save ]</button>
+    <button class="util-btn" style="width:100%;margin-bottom:6px;" onclick="showImport()">[ Import Save ]</button>
+    <textarea class="save-area" id="saveArea" placeholder="Paste JSON here..."></textarea>
+    <button class="util-btn" id="importBtn" style="width:100%;display:none;" onclick="importSave()">[ Confirm Import ]</button>
   </div>
 </div>
 
 <!-- PAGE: AWARDS -->
-<div id=\"page-awards\" class=\"page\">
-  <div class=\"panel\">
-    <div class=\"panel-hdr\"><span class=\"panel-title\">Titles & Achievements</span><span id=\"achCount\" style=\"font-size:.78rem;color:var(--gold);\"></span></div>
-    <div class=\"ach-grid\" id=\"achGrid\"></div>
+<div id="page-awards" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Titles & Achievements</span><span id="achCount" style="font-size:.78rem;color:var(--gold);"></span></div>
+    <div class="ach-grid" id="achGrid"></div>
   </div>
 </div>
 
@@ -453,7 +454,7 @@ let modifierBoost = 1.0;
 // ═══════════════════════════════════════════════════
 function xpNeeded(lvl){ return Math.floor(100*Math.pow(1.18,lvl-1)); }
 function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function seeded(str){ let h=0; for(let i=0;i<str.length;i++) h=Math.imul(31,h)+str.charCodeAt(i)|0; return Math.abs(h)/2.147483647e+09; }
+function seeded(str){ let h=0; for(let i=0;i<str.length;i++) h=Math.imul(31,h)+str.charCodeAt(i)|0; return Math.abs(h)/2147483647; }
 function scrollTop(){ window.scrollTo({top:0,left:0,behavior:'instant'}); }
 function tone(freq,dur){
   try{
@@ -600,13 +601,13 @@ function updateStatRows(){
   const c=document.getElementById('statRows'); if(!c) return;
   c.innerHTML=STAT_DEFS.map(d=>{
     const v=S.stats[d.k]; const pct=Math.floor(v/CFG.STAT_MAX*100);
-    return `<div class=\"stat-row\">
-      <div class=\"stat-hdr\">
-        <div class=\"stat-info\"><span class=\"stat-name\">${d.label}</span><span class=\"stat-desc\">${d.desc}</span></div>
-        <div class=\"stat-ctrl\"><span class=\"stat-val\" id=\"sv-${d.k}\">${v}</span>
-        <button class=\"plus-btn\" id=\"sb-${d.k}\" onclick=\"upgStat('${d.k}')\" ${S.pointsBank<=0||v>=CFG.STAT_MAX?'disabled':''}>[+]</button></div>
+    return `<div class="stat-row">
+      <div class="stat-hdr">
+        <div class="stat-info"><span class="stat-name">${d.label}</span><span class="stat-desc">${d.desc}</span></div>
+        <div class="stat-ctrl"><span class="stat-val" id="sv-${d.k}">${v}</span>
+        <button class="plus-btn" id="sb-${d.k}" onclick="upgStat('${d.k}')" ${S.pointsBank<=0||v>=CFG.STAT_MAX?'disabled':''}>[+]</button></div>
       </div>
-      <div class=\"stat-track\"><div class=\"stat-bar\" style=\"width:${pct}%\"></div></div>
+      <div class="stat-track"><div class="stat-bar" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
 }
@@ -659,19 +660,19 @@ function buildTasks(){
   });
   c.innerHTML=ms.map(m=>{
     const t=S.tasks[m.id]; const done=t&&t.done;
-    return `<div class=\"task-wrap${done?' done':''}${S.locked?' locked':''}\" id=\"tw-${m.id}\">
-      <div class=\"task-item\" onclick=\"toggleTask('${m.id}',${m.xp})\">
-        <div class=\"task-info\">
-          <div class=\"info-btn\" onclick=\"toggleInspect('ins-${m.id}')\">?</div>
-          <div class=\"task-text\">
-            <span class=\"task-name\">${m.name}</span>
-            <span class=\"task-xp\">+${Math.round(m.xp*modifierBoost)} XP</span>
+    return `<div class="task-wrap${done?' done':''}${S.locked?' locked':''}" id="tw-${m.id}">
+      <div class="task-item" onclick="toggleTask('${m.id}',${m.xp})">
+        <div class="task-info">
+          <div class="info-btn" onclick="toggleInspect('ins-${m.id}')">?</div>
+          <div class="task-text">
+            <span class="task-name">${m.name}</span>
+            <span class="task-xp">+${Math.round(m.xp*modifierBoost)} XP</span>
           </div>
         </div>
-        <div class=\"chk\">[✓]</div>
+        <div class="chk">[✓]</div>
       </div>
-      <div class=\"inspect-panel\" id=\"ins-${m.id}\">
-        <div class=\"inspect-title\">${m.title}</div>
+      <div class="inspect-panel" id="ins-${m.id}">
+        <div class="inspect-title">${m.title}</div>
         <div>${m.body}</div>
       </div>
     </div>`;
@@ -714,7 +715,7 @@ function promptLock(){
   const snames={str:'STRENGTH',spd:'SPEED',sta:'STAMINA',def:'DEFENSE',tac:'TACTICS'};
   const lines=ms.map(m=>{
     const key=CFG.TASK_STAT[m.blueprint]||'tac';
-    return `<div><span style=\"color:var(--dim)\">${m.blueprint}:</span> <span style=\"color:var(--green);font-weight:bold\">+1 ${snames[key]}</span></div>`;
+    return `<div><span style="color:var(--dim)">${m.blueprint}:</span> <span style="color:var(--green);font-weight:bold">+1 ${snames[key]}</span></div>`;
   });
   document.getElementById('confirmPreview').innerHTML=lines.join('');
   document.getElementById('confirmOverlay').classList.add('on');
@@ -824,8 +825,8 @@ function quickW(d){
 }
 function renderWList(){
   const c=document.getElementById('wList'); if(!c) return;
-  if(!S.weightHistory.length){ c.innerHTML='<div class=\"w-empty\">No entries yet.</div>'; return; }
-  c.innerHTML=S.weightHistory.map(e=>`<div class=\"w-entry\"><span class=\"w-date\">${e.date}</span><span class=\"w-val\">${parseFloat(e.weight).toFixed(1)} LBS</span></div>`).join('');
+  if(!S.weightHistory.length){ c.innerHTML='<div class="w-empty">No entries yet.</div>'; return; }
+  c.innerHTML=S.weightHistory.map(e=>`<div class="w-entry"><span class="w-date">${e.date}</span><span class="w-val">${parseFloat(e.weight).toFixed(1)} LBS</span></div>`).join('');
 }
 function renderSparkline(){
   const cv=document.getElementById('sparkline'); if(!cv) return;
@@ -858,8 +859,8 @@ function addLog(id,xp){
 function removeLog(id){ if(!S.sessionLog) return; S.sessionLog=S.sessionLog.filter(e=>e.id!==id); renderSessionLog(); }
 function renderSessionLog(){
   const c=document.getElementById('sessionLog'); const tot=document.getElementById('sessionTotal'); if(!c) return;
-  if(!S.sessionLog||!S.sessionLog.length){ c.innerHTML='<span style=\"color:var(--dim);font-size:.76rem;\">No tasks completed yet.</span>'; if(tot) tot.innerText=''; return; }
-  c.innerHTML=S.sessionLog.map(e=>`<div class=\"log-entry\"><span class=\"log-time\">${e.time}</span><span class=\"log-name\">${e.name}</span><span class=\"log-xp\">+${e.xp} XP</span></div>`).join('');
+  if(!S.sessionLog||!S.sessionLog.length){ c.innerHTML='<span style="color:var(--dim);font-size:.76rem;">No tasks completed yet.</span>'; if(tot) tot.innerText=''; return; }
+  c.innerHTML=S.sessionLog.map(e=>`<div class="log-entry"><span class="log-time">${e.time}</span><span class="log-name">${e.name}</span><span class="log-xp">+${e.xp} XP</span></div>`).join('');
   const total=S.sessionLog.reduce((a,e)=>a+e.xp,0);
   if(tot) tot.innerText='SESSION TOTAL: +'+total+' XP';
 }
@@ -925,7 +926,7 @@ document.getElementById('comboCount').addEventListener('click',function(){
 // ═══════════════════════════════════════════════════
 function buildSyllabus(){
   const c=document.getElementById('syllabusPanel'); if(!c) return;
-  c.innerHTML='<div class=\"panel-hdr\"><span class=\"panel-title\">System Progression</span></div>';
+  c.innerHTML='<div class="panel-hdr"><span class="panel-title">System Progression</span></div>';
   [
     {name:'STAGE I: RECRUIT PLATFORM',range:'Ranks 1–3',cond:S.careerRank<=3,desc:'Master basic punch geometry (straight lines), stable stances, and footwork without crossed steps.'},
     {name:'STAGE II: CONTENDER CIRCUITS',range:'Ranks 4–6',cond:S.careerRank>=4&&S.careerRank<=6,desc:'Head-to-body target shifting, 90° lateral pivot steps, variable rhythm punch speeds.'},
@@ -933,7 +934,7 @@ function buildSyllabus(){
   ].forEach(lvl=>{
     const d=document.createElement('div');
     d.className='tier'+(lvl.cond?' active':'');
-    d.innerHTML=`<div class=\"tier-hdr\"><span>${lvl.name}</span><span class=\"tier-status\">${lvl.cond?'[YOUR ACTIVE GOAL]':'[STANDBY]'}</span></div><p style=\"font-size:.78rem;color:var(--blue);margin-bottom:4px;\">${lvl.range}</p><div class=\"tier-desc\">${lvl.desc}</div>`;
+    d.innerHTML=`<div class="tier-hdr"><span>${lvl.name}</span><span class="tier-status">${lvl.cond?'[YOUR ACTIVE GOAL]':'[STANDBY]'}</span></div><p style="font-size:.78rem;color:var(--blue);margin-bottom:4px;">${lvl.range}</p><div class="tier-desc">${lvl.desc}</div>`;
     c.appendChild(d);
   });
 }
@@ -956,15 +957,15 @@ function renderAchievements(){
     const unlocked=S.achievements.includes(a.id);
     const prog=Math.min(a.goal,a.prog(S));
     const pct=Math.floor(prog/a.goal*100);
-    return `<div class=\"ach-card${unlocked?' unlocked':''}\">
-      <div class=\"ach-card-top\">
-        <div class=\"ach-icon\">${a.icon}</div>
-        <div class=\"ach-info\">
-          <div class=\"ach-name\">${a.name}${unlocked?' ✓':''}</div>
-          <div class=\"ach-desc\">${a.desc}</div>
+    return `<div class="ach-card${unlocked?' unlocked':''}">
+      <div class="ach-card-top">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-info">
+          <div class="ach-name">${a.name}${unlocked?' ✓':''}</div>
+          <div class="ach-desc">${a.desc}</div>
         </div>
       </div>
-      <div class=\"ach-prog-track\"><div class=\"ach-prog-bar\" style=\"width:${pct}%\"></div></div>
+      <div class="ach-prog-track"><div class="ach-prog-bar" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
 }
