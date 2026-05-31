@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BoxerXP 2.0">
+  <title>BOXER XP 2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Squada+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --panel: #0f1420;
+      --border: #1c2436;
+      --text: #dde4f0;
+      --dim: #5a6880;
+      --blue: #7ec8e3;
+      --purple: #a855f7;
+      --gold: #f59e0b;
+      --green: #34d399;
+      --red: #f87171;
+      --orange: #fb923c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Share Tech Mono', monospace; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+    html, body { background: var(--bg); color: var(--text); overflow-x: hidden; overscroll-behavior-y: none; }
+    body { padding: 10px 14px calc(env(safe-area-inset-bottom,0px) + 20px); }
+    body.night { --bg:#020305; --panel:#07090f; --border:#10141e; --text:#60728a; --blue:#3a7a94; --purple:#5a3580; --gold:#8a6010; --green:#1a6040; --red:#601818; }
+
+    /* ── OVERLAYS ── */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9000; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:24px; }
+    .overlay.on { display:flex; }
+    .overlay-box { border:2px solid var(--blue); background:var(--panel); padding:36px 24px; max-width:340px; width:100%; }
+    .big-title { font-family:'Squada One',sans-serif; font-size:3rem; color:var(--blue); animation:pulse .6s ease infinite alternate; }
+    @keyframes pulse { from{transform:scale(.97);text-shadow:0 0 4px rgba(126,200,227,.2)} to{transform:scale(1.03);text-shadow:0 0 20px rgba(126,200,227,.6)} }
+    .rank-icon { font-size:3.5rem; margin-bottom:12px; }
+    .rank-title-big { font-family:'Squada One',sans-serif; font-size:2rem; letter-spacing:2px; }
+    .rank-sub { font-size:.9rem; color:var(--dim); max-width:300px; line-height:1.5; margin:10px 0 20px; }
+    canvas#confetti { position:fixed; inset:0; pointer-events:none; z-index:99999; display:none; }
+
+    /* ── HEADER ── */
+    header { background:rgba(15,20,32,.8); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border:2px solid var(--border); padding:14px; margin-bottom:14px; position:sticky; top:8px; z-index:100; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+    .hdr-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .callsign { font-size:1.1rem; color:#fff; letter-spacing:1px; text-transform:uppercase; cursor:pointer; border-bottom:1px dashed var(--dim); padding:2px 6px; }
+    .collapse-btn { background:transparent; border:1px solid var(--border); color:var(--dim); width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.85rem; }
+    .hdr-body { max-height:500px; overflow:hidden; transition:max-height .3s ease-out; }
+    .hdr-body.collapsed { max-height:0; }
+    .rank-row { display:flex; align-items:center; justify-content:center; gap:10px; margin:6px 0 2px; }
+    .rank-name { font-family:'Squada One',sans-serif; font-size:1.8rem; letter-spacing:1.5px; text-transform:uppercase; }
+    .rank-glove { font-size:1.5rem; transition:color .3s; }
+    .level-line { font-size:1rem; color:var(--dim); margin-bottom:10px; }
+    .bar-wrap { margin-bottom:6px; }
+    .bar-label { font-size:.75rem; color:var(--dim); display:flex; justify-content:space-between; margin-bottom:3px; }
+    .bar-track { width:100%; background:#000; border:1px solid var(--border); height:16px; position:relative; }
+    .bar-fill { height:100%; transition:width .3s ease; }
+    .bar-fill.xp-fill { background:linear-gradient(90deg,#2a6898,var(--blue)); }
+    .bar-fill.rank-fill { background:linear-gradient(90deg,#5a1f98,var(--purple)); }
+    .bar-txt { position:absolute; inset:0; text-align:center; font-size:.75rem; line-height:16px; color:#fff; text-shadow:1px 1px 2px #000; }
+    .streak-line { color:var(--red); font-size:1.1rem; margin-top:12px; }
+    .modifier-banner { background:rgba(126,200,227,.07); border:1px solid var(--blue); padding:7px 10px; text-align:center; font-size:.82rem; margin-bottom:14px; color:#fff; letter-spacing:.4px; }
+
+    /* ── NAV ── */
+    .nav { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-bottom:14px; }
+    .nav-btn { background:var(--panel); color:var(--dim); border:1px solid var(--border); padding:10px 0; font-size:.75rem; cursor:pointer; text-transform:uppercase; }
+    .nav-btn.on { color:#fff; background:var(--border); border-color:var(--blue); }
+    .page { display:none; }
+    .page.on { display:block; }
+
+    /* ── PANELS ── */
+    .panel { background:var(--panel); border:2px solid var(--border); padding:14px; margin-bottom:14px; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+    .panel-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px dashed var(--border); padding-bottom:6px; }
+    .panel-title { font-family:'Squada One',sans-serif; font-size:1.35rem; color:var(--blue); text-transform:uppercase; }
+    .util-btn { background:transparent; border:1px solid var(--border); color:var(--dim); padding:4px 10px; font-size:.73rem; text-transform:uppercase; cursor:pointer; }
+
+    /* ── TASKS ── */
+    .task-wrap { margin-bottom:8px; }
+    .task-item { display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,.22); border:1px solid var(--border); padding:13px; cursor:pointer; border-radius:3px; }
+    .task-wrap.done .task-item { border-color:var(--blue); background:rgba(126,200,227,.04); }
+    .task-wrap.locked .task-item { opacity:.5; cursor:not-allowed; }
+    .task-info { display:flex; align-items:center; gap:8px; flex:1; }
+    .info-btn { background:var(--border); color:var(--blue); border:1px solid rgba(255,255,255,.1); width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:.78rem; font-weight:bold; flex-shrink:0; z-index:5; }
+    .task-text { display:flex; flex-direction:column; }
+    .task-name { font-size:1rem; }
+    .task-xp { font-size:.78rem; color:var(--green); margin-top:2px; }
+    .chk { width:28px; height:28px; border:2px solid var(--dim); display:flex; align-items:center; justify-content:center; font-size:.9rem; color:transparent; flex-shrink:0; }
+    .task-wrap.done .chk { border-color:var(--blue); color:var(--blue); background:rgba(126,200,227,.1); }
+    .inspect-panel { display:none; background:#080a0d; border:1px dashed var(--border); border-top:none; padding:11px; font-size:.83rem; color:#b8c4d8; line-height:1.4; }
+    .inspect-panel.on { display:block; }
+    .inspect-title { color:var(--blue); font-size:.73rem; text-transform:uppercase; margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,.04); padding-bottom:2px; }
+    .locked-banner { display:none; background:rgba(52,211,153,.07); border:1px solid var(--green); padding:9px; text-align:center; color:var(--green); font-size:.88rem; margin-bottom:12px; }
+    .locked-banner.on { display:block; }
+    .lock-btn { width:100%; background:rgba(52,211,153,.05); border:1px solid var(--green); color:var(--green); padding:12px; font-size:.88rem; cursor:pointer; text-transform:uppercase; margin-top:8px; display:none; }
+    .gatekeeper { display:none; background:var(--panel); border:2px solid var(--red); padding:20px; text-align:center; margin-bottom:14px; }
+    .gatekeeper.on { display:block; }
+    .confirm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:9000; align-items:center; justify-content:center; }
+    .confirm-overlay.on { display:flex; }
+    .confirm-box { background:var(--panel); border:2px solid var(--green); padding:26px; max-width:340px; width:90%; text-align:center; }
+
+    /* ── TIMER ── */
+    .timer-box { background:rgba(0,0,0,.35); border:1px solid var(--border); padding:14px; margin-bottom:14px; text-align:center; }
+    .timer-status { font-size:.78rem; color:var(--dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+    .timer-display { font-size:2.6rem; color:#fff; margin-bottom:6px; letter-spacing:2px; }
+    .timer-display.flash { animation:tflash .5s ease infinite alternate; }
+    @keyframes tflash { from{color:#fff} to{color:var(--red);text-shadow:0 0 10px var(--red)} }
+    .timer-row { display:flex; justify-content:center; gap:8px; margin-bottom:8px; }
+    .timer-btn { background:var(--panel); border:1px solid var(--border); color:var(--text); padding:6px 16px; font-size:.83rem; cursor:pointer; text-transform:uppercase; }
+    .timer-btn.run { border-color:var(--red); color:var(--red); }
+    .timer-config { display:flex; gap:8px; justify-content:center; align-items:center; margin-top:6px; flex-wrap:wrap; }
+    .timer-config label { font-size:.72rem; color:var(--dim); }
+    .timer-config input { background:#000; border:1px solid var(--border); color:var(--blue); width:48px; text-align:center; padding:4px; font-size:.85rem; }
+    .combo-count { font-size:1.3rem; color:var(--orange); margin-top:4px; letter-spacing:1px; }
+
+    /* ── STATS ── */
+    .archetype { font-family:'Squada One',sans-serif; font-size:1.45rem; color:var(--blue); text-align:center; margin-bottom:12px; text-transform:uppercase; border-bottom:2px solid var(--border); padding-bottom:6px; }
+    .radar-wrap { text-align:center; margin:12px 0; }
+    .points-bank { font-size:.88rem; background:rgba(255,255,255,.02); padding:7px; text-align:center; border:1px solid var(--border); margin-bottom:12px; }
+    .stat-row { padding:12px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+    .stat-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+    .stat-info { display:flex; flex-direction:column; width:66%; }
+    .stat-name { font-size:1rem; letter-spacing:.5px; }
+    .stat-desc { font-size:.73rem; color:var(--dim); line-height:1.3; }
+    .stat-ctrl { display:flex; align-items:center; gap:12px; }
+    .stat-val { font-size:1.2rem; color:var(--blue); font-weight:bold; min-width:24px; text-align:center; }
+    .stat-track { width:100%; height:5px; background:#000; border:1px solid rgba(255,255,255,.03); margin-top:5px; }
+    .stat-bar { width:0%; height:100%; background:var(--blue); transition:width .3s; }
+    .plus-btn { background:var(--border); color:#fff; border:1px solid var(--blue); width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:1rem; cursor:pointer; }
+    .plus-btn:disabled { opacity:.2; cursor:not-allowed; border-color:var(--border); }
+    .refund-wrap { margin-top:14px; text-align:center; }
+    .refund-btn { background:transparent; color:var(--dim); border:1px solid var(--border); padding:7px 14px; font-size:.78rem; cursor:pointer; text-transform:uppercase; }
+
+    /* ── WEIGHT ── */
+    .w-input-row { display:flex; gap:10px; margin-bottom:10px; }
+    .w-input { background:#000; border:1px solid var(--border); color:#fff; padding:12px; font-size:1.2rem; width:60%; text-align:center; }
+    .w-submit { background:var(--border); border:1px solid var(--blue); color:#fff; width:40%; font-size:.83rem; text-transform:uppercase; cursor:pointer; }
+    .w-quick { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:4px; }
+    .w-quick-btn { background:var(--panel); border:1px solid var(--border); color:var(--blue); padding:10px 0; font-size:.92rem; cursor:pointer; font-weight:bold; }
+    .w-entry { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.04); font-size:.83rem; }
+    .w-date { color:var(--dim); }
+    .w-val { color:var(--blue); font-weight:bold; }
+    .w-empty { color:var(--dim); font-size:.83rem; padding:12px 0; text-align:center; }
+    .sparkline-wrap { text-align:center; margin:12px 0 6px; }
+
+    /* ── RANKS ── */
+    .tier { border:1px solid var(--border); padding:11px; margin-bottom:9px; background:rgba(0,0,0,.22); }
+    .tier.active { border-color:var(--blue); background:rgba(126,200,227,.03); box-shadow:inset 4px 0 0 var(--blue); }
+    .tier-hdr { display:flex; justify-content:space-between; font-family:'Squada One',sans-serif; font-size:1.1rem; margin-bottom:4px; }
+    .tier-status { font-size:.78rem; color:var(--dim); font-family:'Share Tech Mono',monospace; }
+    .tier.active .tier-status { color:var(--blue); }
+    .tier-desc { font-size:.78rem; color:var(--dim); padding-left:10px; line-height:1.4; border-left:1px solid rgba(255,255,255,.05); }
+    .save-area { display:none; width:100%; background:#000; border:1px solid var(--border); color:var(--green); padding:9px; font-size:.73rem; height:150px; margin-top:9px; resize:none; }
+    .save-area.on { display:block; }
+    .reset-notice { display:none; background:rgba(126,200,227,.08); border:1px solid var(--blue); padding:9px; text-align:center; color:var(--blue); font-size:.83rem; margin-bottom:12px; }
+    .reset-notice.on { display:block; }
+
+    /* ── ACHIEVEMENTS ── */
+    .ach-grid { display:flex; flex-direction:column; gap:8px; }
+    .ach-card { background:rgba(0,0,0,.25); border:1px solid var(--border); padding:12px; border-radius:3px; opacity:.45; }
+    .ach-card.unlocked { border-color:var(--gold); background:rgba(245,158,11,.06); opacity:1; }
+    .ach-card-top { display:flex; align-items:center; gap:10px; }
+    .ach-icon { font-size:1.6rem; min-width:32px; }
+    .ach-info { flex:1; }
+    .ach-name { font-size:.95rem; color:#fff; }
+    .ach-desc { font-size:.75rem; color:var(--dim); margin-top:2px; }
+    .ach-card.unlocked .ach-name { color:var(--gold); }
+    .ach-prog-track { width:100%; height:4px; background:#000; border:1px solid rgba(255,255,255,.04); margin-top:8px; }
+    .ach-prog-bar { height:100%; background:var(--gold); transition:width .3s; }
+
+    /* ── SESSION LOG ── */
+    .log-entry { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.03); font-size:.8rem; }
+    .log-time { color:var(--dim); font-size:.73rem; min-width:44px; }
+    .log-name { flex:1; padding:0 8px; }
+    .log-xp { color:var(--green); font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<!-- Level Up -->
+<div class="overlay" id="lvlOverlay" onclick="dismissLvl()">
+  <div class="overlay-box">
+    <div class="big-title">LEVEL UP!</div>
+    <p style="font-size:1rem;color:#fff;margin:12px 0 6px;letter-spacing:1px;">COMBAT STANDING INCREASED</p>
+    <p style="font-size:.88rem;color:var(--green);">+3 ATTRIBUTE POINTS UNLOCKED</p>
+    <p style="font-size:.73rem;color:var(--dim);margin-top:22px;">[ TAP TO CONTINUE ]</p>
+  </div>
+</div>
+
+<!-- Rank Up -->
+<div class="overlay" id="rankOverlay" onclick="dismissRank()">
+  <div class="rank-icon" id="rankIcon">🥊</div>
+  <div class="rank-title-big" id="rankTitleBig">RANK UP</div>
+  <div class="rank-sub" id="rankSub"></div>
+  <p style="font-size:.72rem;color:var(--dim);font-size:.73rem">[ TAP TO CONTINUE ]</p>
+</div>
+
+<!-- Confirm Lock -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p style="font-size:.98rem;color:var(--green);margin-bottom:12px;">LOCK IN TODAY'S SESSION?</p>
+    <p style="font-size:.78rem;color:var(--dim);margin-bottom:14px;">Stat gains will be applied:</p>
+    <div id="confirmPreview" style="margin-bottom:16px;font-size:.83rem;"></div>
+    <button class="util-btn" style="width:100%;border-color:var(--green);color:var(--green);padding:12px;font-size:.9rem;" onclick="confirmLock()">CONFIRM & LOCK</button>
+    <button class="util-btn" style="margin-top:8px;width:100%;" onclick="cancelLock()">[ Cancel ]</button>
+  </div>
+</div>
+
+<div class="reset-notice" id="resetNotice">⬆ NEW DAY — TASKS RESET. LET'S GO.</div>
+
+<header>
+  <div class="hdr-top">
+    <span class="callsign" id="callsign" onclick="changeName()">FIGHTER_01</span>
+    <button class="collapse-btn" id="collapseBtn" onclick="toggleCollapse()">▲</button>
+  </div>
+  <div class="hdr-body" id="hdrBody">
+    <div class="rank-row">
+      <span class="rank-glove" id="rankGlove">🥊</span>
+      <span class="rank-name" id="rankName">RECRUIT DIVISION</span>
+    </div>
+    <div class="level-line">FIGHTER LEVEL: <span id="lvlNum" style="color:var(--blue)">1</span></div>
+    <div class="bar-wrap">
+      <div class="bar-label"><span>DAILY XP</span><span id="xpLabel" style="color:var(--blue)">0/100</span></div>
+      <div class="bar-track"><div class="bar-fill xp-fill" id="xpBar"></div><div class="bar-txt" id="xpPct">0%</div></div>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-label"><span>DIVISION PROGRESS</span><span id="rankLabel" style="color:var(--purple)">1/9</span></div>
+      <div class="bar-track"><div class="bar-fill rank-fill" id="rankBar"></div><div class="bar-txt" id="rankPct">11%</div></div>
+    </div>
+    <div class="streak-line">STREAK: <span id="streakNum">0</span> DAYS 🔥</div>
+  </div>
+</header>
+
+<div class="modifier-banner" id="modBanner">LOADING DAILY MODIFIERS...</div>
+
+<div class="nav">
+  <button class="nav-btn on" id="tab-daily" onclick="goTab('daily')">Daily</button>
+  <button class="nav-btn" id="tab-stats" onclick="goTab('stats')">Stats</button>
+  <button class="nav-btn" id="tab-weight" onclick="goTab('weight')">Weight</button>
+  <button class="nav-btn" id="tab-ranks" onclick="goTab('ranks')">Ranks</button>
+  <button class="nav-btn" id="tab-awards" onclick="goTab('awards')">Awards</button>
+</div>
+
+<!-- PAGE: DAILY -->
+<div id="page-daily" class="page on">
+  <div class="timer-box">
+    <div class="timer-status" id="timerStatus">BOXING TIMER IDLE</div>
+    <div class="timer-display" id="timerDisplay">03:00</div>
+    <div class="timer-row">
+      <button class="timer-btn" id="timerToggleBtn" onclick="toggleTimer()">Start Round</button>
+      <button class="timer-btn" onclick="resetTimer()">Reset</button>
+    </div>
+    <div class="combo-count" id="comboCount">COMBOS: 0</div>
+    <div class="timer-config">
+      <label>WORK (s): <input type="number" id="workSec" value="180" min="10" max="600"></label>
+      <label>REST (s): <input type="number" id="restSec" value="60" min="5" max="300"></label>
+      <button class="util-btn" onclick="applyTimerConfig()">Apply</button>
+    </div>
+  </div>
+
+  <div class="gatekeeper" id="gatePanel">
+    <h2 style="color:var(--red);margin-bottom:8px;">⚠️ SKILL TEST DETECTED</h2>
+    <p style="font-size:.88rem;margin-bottom:14px;color:var(--dim);">You've hit the XP ceiling for this rank. Pass your division's physical test with a trainer to advance.</p>
+    <button class="util-btn" style="width:100%;border-color:var(--green);color:var(--green);padding:12px;" onclick="passGate()">LOG TEST AS PASSED</button>
+  </div>
+
+  <div class="locked-banner" id="lockedBanner">✅ SESSION LOCKED IN — STATS UPDATED</div>
+
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">Active Training Plan</span>
+      <button class="util-btn" onclick="selectAll()">[ Select All ]</button>
+    </div>
+    <div id="taskList"></div>
+    <button class="lock-btn" id="lockBtn" onclick="promptLock()">🔒 LOCK IN SESSION & APPLY STAT GAINS</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-title">Session Log</span>
+      <span id="sessionTotal" style="font-size:.78rem;color:var(--green);"></span>
+    </div>
+    <div id="sessionLog"><span style="color:var(--dim);font-size:.76rem;">No tasks completed yet.</span></div>
+  </div>
+</div>
+
+<!-- PAGE: STATS -->
+<div id="page-stats" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Fighter Attributes</span></div>
+    <div class="archetype" id="archetype">STYLE: BALANCE HYBRID</div>
+    <div class="radar-wrap"><canvas id="radar" width="230" height="230"></canvas></div>
+    <div class="points-bank">AVAILABLE POINTS: <span id="ptsDisplay">0</span></div>
+    <div id="statRows"></div>
+    <div class="refund-wrap">
+      <button class="refund-btn" onclick="reallocate()">[ ↺ Reset & Reallocate Points ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: WEIGHT -->
+<div id="page-weight" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Weight Tracking</span></div>
+    <div class="w-input-row">
+      <input type="number" step="0.1" class="w-input" id="wInput" placeholder="0.0" onblur="scrollTop()">
+      <button class="w-submit" onclick="logWeight()">Log Weight</button>
+    </div>
+    <div class="w-quick">
+      <button class="w-quick-btn" onclick="quickW(-5)">-5 LBS</button>
+      <button class="w-quick-btn" onclick="quickW(-1)">-1 LB</button>
+      <button class="w-quick-btn" onclick="quickW(1)">+1 LB</button>
+      <button class="w-quick-btn" onclick="quickW(5)">+5 LBS</button>
+    </div>
+    <div class="sparkline-wrap"><canvas id="sparkline" width="300" height="80"></canvas></div>
+    <div id="wList" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- PAGE: RANKS -->
+<div id="page-ranks" class="page">
+  <div class="panel" id="syllabusPanel">
+    <div class="panel-hdr"><span class="panel-title">Gym Progression Steps</span></div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Save Data</span></div>
+    <button class="util-btn" style="width:100%;margin-bottom:6px;" onclick="exportSave()">[ Export Save ]</button>
+    <button class="util-btn" style="width:100%;margin-bottom:6px;" onclick="showImport()">[ Import Save ]</button>
+    <textarea class="save-area" id="saveArea" placeholder="Paste JSON here..."></textarea>
+    <button class="util-btn" id="importBtn" style="width:100%;display:none;" onclick="importSave()">[ Confirm Import ]</button>
+  </div>
+</div>
+
+<!-- PAGE: AWARDS -->
+<div id="page-awards" class="page">
+  <div class="panel">
+    <div class="panel-hdr"><span class="panel-title">Achievements</span><span id="achCount" style="font-size:.78rem;color:var(--gold);"></span></div>
+    <div class="ach-grid" id="achGrid"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════
+const CFG = {
+  SAVE_KEY: 'bxp2_v1',
+  MAX_RANK: 9,
+  STAT_MAX: 100,
+  MAX_W_HIST: 30,
+  GATE_PCT: 0.90,
+  PTS_PER_LVL: 3,
+  TASK_STAT: {
+    'Shadowboxing':'spd','Heavy Bag':'str','Footwork':'sta',
+    'Jab Drill':'spd','Cross Drill':'str','Defense Drill':'def',
+    'Conditioning':'sta','Combination Work':'tac','Pad Work':'spd','Sparring':'tac'
+  }
+};
+const RANK_TITLES = ['RECRUIT DIVISION','NOVICE STRIKER','AMATEUR CONTENDER','REGIONAL FIGHTER','APEX AGGRESSOR','CHAMPIONSHIP LINE','ELITE TECHNICIAN','MASTER STRIKER','GRAND FIGHT LEGEND'];
+const RANK_PROMO = [
+  null,
+  {icon:'🥊',title:'RECRUIT DIVISION',color:'var(--blue)',sub:'Your journey begins. Guard up — this gym will forge you.'},
+  {icon:'🥊',title:'NOVICE STRIKER',color:'var(--blue)',sub:'Fundamentals starting to click. Now build the habit.'},
+  {icon:'🏅',title:'AMATEUR CONTENDER',color:'var(--blue)',sub:'Basics locked in. Combinations are your next weapon.'},
+  {icon:'🏅',title:'REGIONAL FIGHTER',color:'var(--purple)',sub:'Local fighters take you seriously. Stay hungry.'},
+  {icon:'🏅',title:'APEX AGGRESSOR',color:'var(--purple)',sub:'Power and precision combined. Elite territory ahead.'},
+  {icon:'🏆',title:'CHAMPIONSHIP LINE',color:'var(--purple)',sub:'You fight like a champion. The belt is within reach.'},
+  {icon:'⭐',title:'ELITE TECHNICIAN',color:'var(--gold)',sub:'Pure mastery. Every movement has a purpose.'},
+  {icon:'⭐',title:'MASTER STRIKER',color:'var(--gold)',sub:'Few fighters reach this level. You are one of them.'},
+  {icon:'👑',title:'GRAND FIGHT LEGEND',color:'var(--gold)',sub:'The pinnacle. Your name is in the record books.'}
+];
+const MISSIONS = {
+  beginner: [
+    {id:'t1',name:'> Shadowboxing Rounds',blueprint:'Shadowboxing',xp:30,title:'Setup',body:'3 rounds x 2 min. Focus on straight punches: jab and cross. Keep your guard up between combinations.'},
+    {id:'t2',name:'> Heavy Bag Power Sets',blueprint:'Heavy Bag',xp:45,title:'Execution',body:'4 sets of 20 power shots. Rotate hips fully on each cross. Rest 60s between sets.'},
+    {id:'t3',name:'> Footwork Pattern Drill',blueprint:'Footwork',xp:30,title:'Movement',body:'Box step, lateral slide, pivot sequence x 5 minutes. Keep weight balanced on the balls of your feet.'}
+  ],
+  intermediate: [
+    {id:'t1',name:'> Head-Body Combo Drill',blueprint:'Combination Work',xp:40,title:'Setup',body:'Jab-cross-left hook-body right combinations. 4 rounds x 2 min on the bag. Stay relaxed between bursts.'},
+    {id:'t2',name:'> Defense Shell Drill',blueprint:'Defense Drill',xp:40,title:'Execution',body:'Slip left, slip right, roll under hooks. 3 rounds reactive with a partner or mirror. Eyes stay open.'},
+    {id:'t3',name:'> 90-Degree Pivot Steps',blueprint:'Footwork',xp:35,title:'Movement',body:'After each combination, execute a 90° angle exit step. Drill 5 reps left and right pivot each round.'}
+  ],
+  advanced: [
+    {id:'t1',name:'> Inside Distance Sparring',blueprint:'Sparring',xp:55,title:'Setup',body:'Phone-booth distance. Elbows tight, roll off the ropes, short hooks only. 3 rounds controlled.'},
+    {id:'t2',name:'> Feint & Bait Sequences',blueprint:'Combination Work',xp:50,title:'Execution',body:'False jab feint → counter cross timing. 20 reps each side on pads. Pause after each successful bait.'},
+    {id:'t3',name:'> Spring Footwork Circuit',blueprint:'Footwork',xp:45,title:'Movement',body:'Elastic quick-step forward/back, lateral springs x 5 min continuous. Mimic Lomachenko lateral burst patterns.'}
+  ]
+};
+const ACHIEVEMENTS = [
+  {id:'first_blood',icon:'🩸',name:'First Blood',desc:'Complete your very first training session',check:s=>s.totalSessions>=1,prog:s=>Math.min(1,s.totalSessions),goal:1},
+  {id:'week_streak',icon:'🔥',name:'7-Day Inferno',desc:'Maintain a 7-day training streak',check:s=>s.streak>=7,prog:s=>s.streak,goal:7},
+  {id:'month_streak',icon:'💎',name:'Diamond Grind',desc:'Maintain a 30-day training streak',check:s=>s.streak>=30,prog:s=>s.streak,goal:30},
+  {id:'lvl10',icon:'⬆️',name:'Double Digits',desc:'Reach Fighter Level 10',check:s=>s.level>=10,prog:s=>s.level,goal:10},
+  {id:'lvl25',icon:'🚀',name:'Ascension',desc:'Reach Fighter Level 25',check:s=>s.level>=25,prog:s=>s.level,goal:25},
+  {id:'stat50',icon:'💪',name:'Halfway Maxed',desc:'Raise any stat to 50',check:s=>Object.values(s.stats).some(v=>v>=50),prog:s=>Math.max(...Object.values(s.stats)),goal:50},
+  {id:'allstat30',icon:'⚖️',name:'Well Rounded',desc:'Raise all 5 stats to 30',check:s=>Object.values(s.stats).every(v=>v>=30),prog:s=>Math.min(...Object.values(s.stats)),goal:30},
+  {id:'rank5',icon:'🏅',name:'Regional Rep',desc:'Reach Rank 5',check:s=>s.careerRank>=5,prog:s=>s.careerRank,goal:5},
+  {id:'rank9',icon:'👑',name:'Grand Legend',desc:'Reach Rank 9 — the pinnacle',check:s=>s.careerRank>=9,prog:s=>s.careerRank,goal:9},
+  {id:'sessions25',icon:'🏋️',name:'Grind Mode',desc:'Complete 25 locked training sessions',check:s=>s.totalSessions>=25,prog:s=>s.totalSessions,goal:25},
+  {id:'weight10',icon:'⚖️',name:'Weight Watcher',desc:'Log 10 weight entries',check:s=>s.weightHistory.length>=10,prog:s=>s.weightHistory.length,goal:10},
+  {id:'combo100',icon:'💥',name:'Combo Machine',desc:'Land 100 combos on the timer',check:s=>s.totalCombos>=100,prog:s=>s.totalCombos||0,goal:100}
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let S = {
+  username:'FIGHTER_01', level:1, xp:0, careerRank:1,
+  streak:0, lastStreakDate:null, pointsBank:0,
+  collapsed:false, gateActive:false, locked:false,
+  totalSessions:0, totalCombos:0,
+  weight:180.0, weightHistory:[], sessionLog:[], lastReset:null,
+  achievements:[],
+  stats:{str:10,spd:10,sta:10,def:10,tac:10},
+  tasks:{
+    t1:{done:false,xp:30,blueprint:'Shadowboxing'},
+    t2:{done:false,xp:45,blueprint:'Heavy Bag'},
+    t3:{done:false,xp:30,blueprint:'Footwork'}
+  },
+  timer:{work:180,rest:60,left:180,running:false,mode:'WORK',instance:null}
+};
+let modifierBoost = 1.0;
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function xpNeeded(lvl){ return Math.floor(100*Math.pow(1.18,lvl-1)); }
+function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function seeded(str){ let h=0; for(let i=0;i<str.length;i++) h=Math.imul(31,h)+str.charCodeAt(i)|0; return Math.abs(h)/2147483647; }
+function scrollTop(){ window.scrollTo({top:0,left:0,behavior:'instant'}); }
+function tone(freq,dur){
+  try{
+    const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);o.frequency.value=freq;o.type='sine';
+    g.gain.setValueAtTime(.14,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+dur);
+    o.start();o.stop(a.currentTime+dur);
+  }catch(e){}
+}
+function missionTier(rank){ return rank<=3?'beginner':rank<=6?'intermediate':'advanced'; }
+function gateLevel(){ const g={1:5,2:10,3:15,4:20,5:25,6:30,7:35,8:40}; return g[S.careerRank]||null; }
+
+// ═══════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════
+function buildPayload(){
+  return {username:S.username,level:S.level,xp:S.xp,careerRank:S.careerRank,
+    streak:S.streak,lastStreakDate:S.lastStreakDate,pointsBank:S.pointsBank,
+    stats:S.stats,collapsed:S.collapsed,weight:S.weight,weightHistory:S.weightHistory,
+    tasks:S.tasks,lastReset:S.lastReset,gateActive:S.gateActive,locked:S.locked,
+    achievements:S.achievements,totalSessions:S.totalSessions,totalCombos:S.totalCombos||0,
+    sessionLog:S.sessionLog};
+}
+function save(){ try{ localStorage.setItem(CFG.SAVE_KEY,JSON.stringify(buildPayload())); }catch(e){} }
+function applyPkg(p){
+  if(!p)return;
+  const d=(k,v)=>p[k]!==undefined?p[k]:v;
+  S.username=d('username','FIGHTER_01'); S.level=d('level',1); S.xp=d('xp',0);
+  S.careerRank=d('careerRank',1); S.streak=d('streak',0); S.lastStreakDate=d('lastStreakDate',null);
+  S.pointsBank=d('pointsBank',0); S.stats=d('stats',S.stats); S.collapsed=d('collapsed',false);
+  S.weight=d('weight',180); S.weightHistory=d('weightHistory',[]); S.tasks=d('tasks',S.tasks);
+  S.lastReset=d('lastReset',null); S.gateActive=d('gateActive',false); S.locked=d('locked',false);
+  S.achievements=d('achievements',[]); S.totalSessions=d('totalSessions',0);
+  S.totalCombos=d('totalCombos',0); S.sessionLog=d('sessionLog',[]);
+  if(S.collapsed){
+    document.getElementById('hdrBody').classList.add('collapsed');
+    document.getElementById('collapseBtn').innerText='▼';
+  }
+}
+function loadState(){ try{ const r=localStorage.getItem(CFG.SAVE_KEY); if(r) applyPkg(JSON.parse(r)); }catch(e){} }
+function exportSave(){
+  const a=document.getElementById('saveArea');
+  a.value=JSON.stringify(buildPayload(),null,2); a.classList.add('on'); a.select();
+  document.getElementById('importBtn').style.display='none';
+}
+function showImport(){
+  const a=document.getElementById('saveArea');
+  a.value=''; a.classList.add('on'); a.placeholder='Paste JSON here...';
+  document.getElementById('importBtn').style.display='block';
+}
+function importSave(){
+  try{
+    applyPkg(JSON.parse(document.getElementById('saveArea').value));
+    render(); document.getElementById('saveArea').classList.remove('on');
+    document.getElementById('importBtn').style.display='none'; save();
+  }catch(e){ alert('Invalid save data.'); }
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY RESET
+// ═══════════════════════════════════════════════════
+function checkReset(){
+  const today=todayISO();
+  if(S.lastReset===today) return;
+  if(S.lastReset){ document.getElementById('resetNotice').classList.add('on'); setTimeout(()=>document.getElementById('resetNotice').classList.remove('on'),4000); }
+  Object.keys(S.tasks).forEach(k=>{ S.tasks[k].done=false; });
+  S.locked=false; S.gateActive=false; S.sessionLog=[]; S.lastReset=today; save();
+}
+function checkStreak(){
+  const today=todayISO();
+  if(S.lastStreakDate===today) return;
+  const yest=new Date(); yest.setDate(yest.getDate()-1);
+  const yISO=yest.getFullYear()+'-'+String(yest.getMonth()+1).padStart(2,'0')+'-'+String(yest.getDate()).padStart(2,'0');
+  if(S.lastStreakDate!==yISO && S.lastStreakDate!==today) S.streak=0;
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY MODIFIER
+// ═══════════════════════════════════════════════════
+function applyModifier(){
+  const opts=[
+    {label:'⚡ FOCUS DAY: Speed XP +25% today.',boost:1.25},
+    {label:'🤸 ENDURANCE BLOCK: Stamina XP +25% today.',boost:1.25},
+    {label:'🛡️ COUNTER DAY: Defense XP +25% today.',boost:1.25},
+    {label:'🔥 POWER SURGE: All XP +15% today.',boost:1.15},
+    {label:'⚖️ BALANCE DAY: All stats rewarded equally.',boost:1.0}
+  ];
+  const idx=Math.floor(seeded(new Date().toDateString())*opts.length);
+  const m=opts[idx];
+  modifierBoost=m.boost;
+  document.getElementById('modBanner').innerText=m.label;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function render(){
+  document.getElementById('callsign').innerText=S.username;
+  document.getElementById('lvlNum').innerText=S.level;
+  document.getElementById('streakNum').innerText=S.streak;
+  document.getElementById('ptsDisplay').innerText=S.pointsBank;
+  const wi=document.getElementById('wInput'); if(wi) wi.placeholder=S.weight.toFixed(1);
+  updateRankDisplay();
+  updateBars();
+  updateStatRows();
+  evalGate();
+  buildTasks();
+  buildSyllabus();
+  renderWList();
+  renderSparkline();
+  renderSessionLog();
+  applyLockedState();
+  checkLockBtn();
+  renderAchievements();
+  evalArchetype();
+  drawRadar();
+}
+function updateRankDisplay(){
+  const idx=Math.min(S.careerRank-1,RANK_TITLES.length-1);
+  const col=S.careerRank<=3?'var(--blue)':S.careerRank<=6?'var(--purple)':'var(--gold)';
+  const n=document.getElementById('rankName'); const g=document.getElementById('rankGlove');
+  if(n){n.innerText=RANK_TITLES[idx];n.style.color=col;}
+  if(g) g.style.color=col;
+}
+function updateBars(){
+  const needed=xpNeeded(S.level);
+  const xpPct=Math.min(100,Math.floor(S.xp/needed*100));
+  document.getElementById('xpBar').style.width=xpPct+'%';
+  document.getElementById('xpPct').innerText=xpPct+'%';
+  document.getElementById('xpLabel').innerText=S.xp+'/'+needed;
+  const rPct=Math.min(100,Math.floor(S.careerRank/CFG.MAX_RANK*100));
+  document.getElementById('rankBar').style.width=rPct+'%';
+  document.getElementById('rankPct').innerText=rPct+'%';
+  document.getElementById('rankLabel').innerText=S.careerRank+'/'+CFG.MAX_RANK;
+}
+const STAT_DEFS=[
+  {k:'str',label:'STRENGTH',desc:'Impact force, punch mechanics, body rotation power.'},
+  {k:'spd',label:'SPEED',desc:'Hand velocity, punch snap, fast muscle contractions.'},
+  {k:'sta',label:'STAMINA',desc:'Cardio capacity and multi-round pacing threshold.'},
+  {k:'def',label:'DEFENSE',desc:'Head movement, parry timing, slip accuracy.'},
+  {k:'tac',label:'TACTICS',desc:'Counter-punch reads, fakes, in-fight adaptability.'}
+];
+function updateStatRows(){
+  const c=document.getElementById('statRows'); if(!c) return;
+  c.innerHTML=STAT_DEFS.map(d=>{
+    const v=S.stats[d.k]; const pct=Math.floor(v/CFG.STAT_MAX*100);
+    return `<div class="stat-row">
+      <div class="stat-hdr">
+        <div class="stat-info"><span class="stat-name">${d.label}</span><span class="stat-desc">${d.desc}</span></div>
+        <div class="stat-ctrl"><span class="stat-val" id="sv-${d.k}">${v}</span>
+        <button class="plus-btn" id="sb-${d.k}" onclick="upgStat('${d.k}')" ${S.pointsBank<=0||v>=CFG.STAT_MAX?'disabled':''}>[+]</button></div>
+      </div>
+      <div class="stat-track"><div class="stat-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+function evalArchetype(){
+  const {str,spd,sta,def,tac}=S.stats;
+  const mx=Math.max(str,spd,sta,def,tac);
+  let arch='BALANCE HYBRID';
+  if(str===mx&&str>spd&&str>sta&&str>def&&str>tac) arch='POWER SLUGGER';
+  else if(spd===mx&&spd>str&&spd>sta&&spd>def&&spd>tac) arch='SPEED OUT-BOXER';
+  else if(sta===mx&&sta>str&&sta>spd&&sta>def&&sta>tac) arch='PRESSURE GRINDER';
+  else if(def===mx&&def>str&&def>spd&&def>sta&&def>tac) arch='IRON WALL COUNTER';
+  else if(tac===mx&&tac>str&&tac>spd&&tac>sta&&tac>def) arch='TECHNICAL INTERCEPTOR';
+  const el=document.getElementById('archetype'); if(el) el.innerText='STYLE: '+arch;
+}
+function drawRadar(){
+  const cv=document.getElementById('radar'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=Math.min(W,H)*.37;
+  const labels=['STR','SPD','STA','DEF','TAC'];
+  const vals=[S.stats.str,S.stats.spd,S.stats.sta,S.stats.def,S.stats.tac];
+  const N=labels.length; const angles=labels.map((_,i)=>(Math.PI*2*i/N)-Math.PI/2);
+  ctx.clearRect(0,0,W,H);
+  [.25,.5,.75,1].forEach(f=>{
+    ctx.beginPath();
+    angles.forEach((a,i)=>{ const x=cx+Math.cos(a)*R*f,y=cy+Math.sin(a)*R*f; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.closePath(); ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.stroke();
+  });
+  angles.forEach(a=>{ ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R); ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.stroke(); });
+  ctx.beginPath();
+  angles.forEach((a,i)=>{ const r=(vals[i]/CFG.STAT_MAX)*R,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.closePath(); ctx.fillStyle='rgba(126,200,227,.16)'; ctx.fill(); ctx.strokeStyle='var(--blue)'; ctx.lineWidth=2; ctx.stroke();
+  angles.forEach((a,i)=>{
+    const r=(vals[i]/CFG.STAT_MAX)*R,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fillStyle='var(--blue)'; ctx.fill();
+  });
+  ctx.font="bold 11px 'Share Tech Mono',monospace"; ctx.fillStyle='#999'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  angles.forEach((a,i)=>{ const x=cx+Math.cos(a)*(R+19),y=cy+Math.sin(a)*(R+19); ctx.fillText(labels[i]+' '+vals[i],x,y); });
+}
+
+// ═══════════════════════════════════════════════════
+// TASKS
+// ═══════════════════════════════════════════════════
+function buildTasks(){
+  const tier=missionTier(S.careerRank);
+  const ms=MISSIONS[tier];
+  const c=document.getElementById('taskList'); if(!c) return;
+  ms.forEach((m,i)=>{
+    const tid=m.id; const task=S.tasks[tid];
+    if(task){ task.blueprint=m.blueprint; task.xp=m.xp; }
+    else S.tasks[tid]={done:false,xp:m.xp,blueprint:m.blueprint};
+  });
+  c.innerHTML=ms.map(m=>{
+    const t=S.tasks[m.id]; const done=t&&t.done;
+    return `<div class="task-wrap${done?' done':''}${S.locked?' locked':''}" id="tw-${m.id}">
+      <div class="task-item" onclick="toggleTask('${m.id}',${m.xp})">
+        <div class="task-info">
+          <div class="info-btn" onclick="toggleInspect('ins-${m.id}')">?</div>
+          <div class="task-text">
+            <span class="task-name">${m.name}</span>
+            <span class="task-xp">+${Math.round(m.xp*modifierBoost)} XP</span>
+          </div>
+        </div>
+        <div class="chk">[✓]</div>
+      </div>
+      <div class="inspect-panel" id="ins-${m.id}">
+        <div class="inspect-title">${m.title}</div>
+        <div>${m.body}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleTask(id,baseXp){
+  if(S.locked) return;
+  const t=S.tasks[id]; if(!t) return;
+  const xp=Math.round(baseXp*modifierBoost);
+  t.done=!t.done;
+  const w=document.getElementById('tw-'+id);
+  if(w) w.classList.toggle('done',t.done);
+  if(t.done){ addXP(xp); addLog(id,xp); }
+  else{ addXP(-xp); removeLog(id); }
+  save(); checkLockBtn();
+}
+function selectAll(){
+  if(S.locked) return;
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  ms.forEach(m=>{
+    const t=S.tasks[m.id]; if(t&&!t.done){
+      const xp=Math.round(m.xp*modifierBoost);
+      t.done=true;
+      const w=document.getElementById('tw-'+m.id); if(w) w.classList.add('done');
+      addXP(xp); addLog(m.id,xp);
+    }
+  });
+  save(); checkLockBtn();
+}
+function checkLockBtn(){
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  const allDone=ms.every(m=>S.tasks[m.id]&&S.tasks[m.id].done);
+  const btn=document.getElementById('lockBtn');
+  if(btn) btn.style.display=allDone&&!S.locked?'block':'none';
+}
+function toggleInspect(id){ event.stopPropagation(); const p=document.getElementById(id); if(!p) return; const open=p.classList.contains('on'); document.querySelectorAll('.inspect-panel.on').forEach(x=>x.classList.remove('on')); if(!open) p.classList.add('on'); }
+function promptLock(){
+  if(S.locked) return;
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  const snames={str:'STRENGTH',spd:'SPEED',sta:'STAMINA',def:'DEFENSE',tac:'TACTICS'};
+  const lines=ms.map(m=>{
+    const key=CFG.TASK_STAT[m.blueprint]||'tac';
+    return `<div><span style="color:var(--dim)">${m.blueprint}:</span> <span style="color:var(--green);font-weight:bold">+1 ${snames[key]}</span></div>`;
+  });
+  document.getElementById('confirmPreview').innerHTML=lines.join('');
+  document.getElementById('confirmOverlay').classList.add('on');
+}
+function confirmLock(){
+  document.getElementById('confirmOverlay').classList.remove('on');
+  S.locked=true;
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  ms.forEach(m=>{
+    const key=CFG.TASK_STAT[m.blueprint]||'tac';
+    if(S.stats[key]<CFG.STAT_MAX) S.stats[key]++;
+    const w=document.getElementById('tw-'+m.id); if(w) w.classList.add('locked');
+  });
+  S.totalSessions=(S.totalSessions||0)+1;
+  const today=todayISO();
+  if(S.lastStreakDate!==today){ S.streak++; S.lastStreakDate=today; }
+  document.getElementById('lockedBanner').classList.add('on');
+  updateStatRows(); drawRadar(); evalArchetype(); save(); checkAchievements(); renderAchievements();
+}
+function cancelLock(){ document.getElementById('confirmOverlay').classList.remove('on'); }
+function applyLockedState(){
+  if(!S.locked) return;
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  ms.forEach(m=>{ const w=document.getElementById('tw-'+m.id); if(w) w.classList.add('locked'); });
+  document.getElementById('lockedBanner').classList.add('on');
+}
+
+// ═══════════════════════════════════════════════════
+// XP & LEVEL
+// ═══════════════════════════════════════════════════
+function addXP(amount){
+  if(S.gateActive&&amount>0) return;
+  S.xp+=amount; if(S.xp<0) S.xp=0;
+  const needed=xpNeeded(S.level);
+  while(S.xp>=needed){ S.xp-=needed; S.level++; triggerLevelUp(); }
+  evalGate(); updateBars(); save();
+}
+function triggerLevelUp(){
+  S.pointsBank+=CFG.PTS_PER_LVL;
+  document.getElementById('lvlOverlay').classList.add('on');
+  tone(880,.15); confettiBurst();
+}
+function dismissLvl(){
+  document.getElementById('lvlOverlay').classList.remove('on');
+  render();
+}
+function passGate(){
+  if(S.careerRank<CFG.MAX_RANK) S.careerRank++;
+  S.level++; S.xp=0; S.gateActive=false;
+  document.getElementById('gatePanel').classList.remove('on');
+  save(); showRankUp(S.careerRank);
+}
+function showRankUp(r){
+  const d=RANK_PROMO[Math.min(r,RANK_PROMO.length-1)];
+  if(!d){ render(); return; }
+  document.getElementById('rankIcon').textContent=d.icon;
+  document.getElementById('rankTitleBig').textContent=d.title;
+  document.getElementById('rankTitleBig').style.color=d.color;
+  document.getElementById('rankSub').textContent=d.sub;
+  document.getElementById('rankOverlay').classList.add('on');
+  tone(523,.1); setTimeout(()=>tone(659,.1),180); setTimeout(()=>tone(784,.1),360); setTimeout(()=>tone(1047,.18),540);
+  confettiBurst();
+}
+function dismissRank(){
+  document.getElementById('rankOverlay').classList.remove('on'); render(); checkAchievements(); renderAchievements();
+}
+function evalGate(){
+  const gl=gateLevel();
+  if(!gl){ S.gateActive=false; document.getElementById('gatePanel').classList.remove('on'); return; }
+  const needed=xpNeeded(S.level);
+  const isGate=S.level===gl&&S.xp>=Math.floor(needed*CFG.GATE_PCT);
+  S.gateActive=isGate;
+  document.getElementById('gatePanel').classList.toggle('on',isGate);
+}
+
+// ═══════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════
+function upgStat(k){
+  if(S.pointsBank>0&&S.stats[k]<CFG.STAT_MAX){ S.stats[k]++; S.pointsBank--; updateStatRows(); drawRadar(); evalArchetype(); save(); }
+}
+function reallocate(){
+  const base=10;
+  Object.keys(S.stats).forEach(k=>{ S.pointsBank+=S.stats[k]-base; S.stats[k]=base; });
+  updateStatRows(); drawRadar(); evalArchetype(); save();
+}
+
+// ═══════════════════════════════════════════════════
+// WEIGHT
+// ═══════════════════════════════════════════════════
+function logWeight(){
+  const i=document.getElementById('wInput'); const v=parseFloat(i.value);
+  if(!isNaN(v)&&v>0){
+    S.weight=v; i.placeholder=v.toFixed(1);
+    S.weightHistory.unshift({date:todayISO(),weight:v});
+    if(S.weightHistory.length>CFG.MAX_W_HIST) S.weightHistory=S.weightHistory.slice(0,CFG.MAX_W_HIST);
+    renderWList(); renderSparkline(); save(); checkAchievements(); renderAchievements();
+  }
+  i.value=''; scrollTop();
+}
+function quickW(d){
+  S.weight=Math.max(0,S.weight+d);
+  document.getElementById('wInput').placeholder=S.weight.toFixed(1);
+  S.weightHistory.unshift({date:todayISO(),weight:S.weight});
+  if(S.weightHistory.length>CFG.MAX_W_HIST) S.weightHistory=S.weightHistory.slice(0,CFG.MAX_W_HIST);
+  renderWList(); renderSparkline(); save();
+}
+function renderWList(){
+  const c=document.getElementById('wList'); if(!c) return;
+  if(!S.weightHistory.length){ c.innerHTML='<div class="w-empty">No entries yet.</div>'; return; }
+  c.innerHTML=S.weightHistory.map(e=>`<div class="w-entry"><span class="w-date">${e.date}</span><span class="w-val">${parseFloat(e.weight).toFixed(1)} LBS</span></div>`).join('');
+}
+function renderSparkline(){
+  const cv=document.getElementById('sparkline'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const hist=[...S.weightHistory].reverse().slice(0,20);
+  if(hist.length<2){ ctx.fillStyle='var(--dim)'; ctx.font="11px 'Share Tech Mono'"; ctx.textAlign='center'; ctx.fillText('Log 2+ entries to see trend',W/2,H/2); return; }
+  const vals=hist.map(e=>parseFloat(e.weight));
+  const mn=Math.min(...vals),mx=Math.max(...vals),range=mx-mn||1;
+  const pad=10;
+  const pts=vals.map((v,i)=>({x:pad+(i/(vals.length-1))*(W-pad*2),y:H-pad-(v-mn)/range*(H-pad*2)}));
+  ctx.beginPath();
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle='var(--blue)'; ctx.lineWidth=2; ctx.stroke();
+  pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fillStyle='var(--blue)'; ctx.fill(); });
+  ctx.fillStyle='var(--dim)'; ctx.font="10px 'Share Tech Mono'"; ctx.textAlign='left'; ctx.fillText(mn.toFixed(1),2,H-2);
+  ctx.textAlign='right'; ctx.fillText(mx.toFixed(1),W-2,12);
+}
+
+// ═══════════════════════════════════════════════════
+// SESSION LOG
+// ═══════════════════════════════════════════════════
+function addLog(id,xp){
+  const tier=missionTier(S.careerRank); const ms=MISSIONS[tier];
+  const m=ms.find(x=>x.id===id); const name=m?m.name:id;
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if(!S.sessionLog) S.sessionLog=[];
+  S.sessionLog.push({id,name,xp,time:t}); renderSessionLog();
+}
+function removeLog(id){ if(!S.sessionLog) return; S.sessionLog=S.sessionLog.filter(e=>e.id!==id); renderSessionLog(); }
+function renderSessionLog(){
+  const c=document.getElementById('sessionLog'); const tot=document.getElementById('sessionTotal'); if(!c) return;
+  if(!S.sessionLog||!S.sessionLog.length){ c.innerHTML='<span style="color:var(--dim);font-size:.76rem;">No tasks completed yet.</span>'; if(tot) tot.innerText=''; return; }
+  c.innerHTML=S.sessionLog.map(e=>`<div class="log-entry"><span class="log-time">${e.time}</span><span class="log-name">${e.name}</span><span class="log-xp">+${e.xp} XP</span></div>`).join('');
+  const total=S.sessionLog.reduce((a,e)=>a+e.xp,0);
+  if(tot) tot.innerText='SESSION TOTAL: +'+total+' XP';
+}
+
+// ═══════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════
+let combosThisRound=0;
+function applyTimerConfig(){
+  const w=parseInt(document.getElementById('workSec').value)||180;
+  const r=parseInt(document.getElementById('restSec').value)||60;
+  S.timer.work=Math.max(10,w); S.timer.rest=Math.max(5,r);
+  if(!S.timer.running){ S.timer.left=S.timer.work; renderTimerDisplay(); }
+}
+function toggleTimer(){
+  const btn=document.getElementById('timerToggleBtn');
+  const stat=document.getElementById('timerStatus');
+  if(S.timer.running){
+    clearInterval(S.timer.instance); S.timer.running=false;
+    btn.innerText='Resume Round'; btn.classList.remove('run');
+    stat.innerText=S.timer.mode+' PAUSED';
+  } else {
+    S.timer.running=true; combosThisRound=0;
+    btn.innerText='Pause Round'; btn.classList.add('run');
+    stat.innerText=S.timer.mode==='WORK'?'ROUND LIVE — WORK HARD':'RESTING — ACTIVE RECOVERY';
+    S.timer.instance=setInterval(()=>{ S.timer.left--; renderTimerDisplay(); if(S.timer.left<=0) cycleTimer(); },1000);
+  }
+}
+function cycleTimer(){
+  const disp=document.getElementById('timerDisplay'); const stat=document.getElementById('timerStatus');
+  if(S.timer.mode==='WORK'){
+    S.timer.mode='REST'; S.timer.left=S.timer.rest;
+    stat.innerText='RESTING — ACTIVE RECOVERY'; if(disp) disp.classList.add('flash'); tone(440,.2);
+  } else {
+    S.timer.mode='WORK'; S.timer.left=S.timer.work;
+    stat.innerText='ROUND LIVE — WORK HARD'; if(disp) disp.classList.remove('flash'); tone(660,.15);
+    combosThisRound=0;
+  }
+  renderTimerDisplay();
+}
+function resetTimer(){
+  clearInterval(S.timer.instance); S.timer.running=false; S.timer.mode='WORK'; S.timer.left=S.timer.work; combosThisRound=0;
+  const btn=document.getElementById('timerToggleBtn'); btn.innerText='Start Round'; btn.classList.remove('run');
+  document.getElementById('timerDisplay').classList.remove('flash');
+  document.getElementById('timerStatus').innerText='BOXING TIMER IDLE';
+  document.getElementById('comboCount').innerText='COMBOS: 0';
+  renderTimerDisplay();
+}
+function renderTimerDisplay(){
+  const m=Math.floor(S.timer.left/60),s=S.timer.left%60;
+  document.getElementById('timerDisplay').innerText=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+// Tap the combo count to increment combos
+document.getElementById('comboCount').addEventListener('click',function(){
+  if(!S.timer.running||S.timer.mode!=='WORK') return;
+  combosThisRound++; S.totalCombos=(S.totalCombos||0)+1;
+  document.getElementById('comboCount').innerText='COMBOS: '+combosThisRound;
+  save(); checkAchievements(); renderAchievements();
+});
+
+// ═══════════════════════════════════════════════════
+// SYLLABUS
+// ═══════════════════════════════════════════════════
+function buildSyllabus(){
+  const c=document.getElementById('syllabusPanel'); if(!c) return;
+  c.innerHTML='<div class="panel-hdr"><span class="panel-title">Gym Progression Steps</span></div>';
+  [
+    {name:'STAGE I: RECRUIT PLATFORM',range:'Ranks 1–3',cond:S.careerRank<=3,desc:'Master basic punch geometry (straight lines), stable stances, and footwork without crossed steps.'},
+    {name:'STAGE II: CONTENDER CIRCUITS',range:'Ranks 4–6',cond:S.careerRank>=4&&S.careerRank<=6,desc:'Head-to-body target shifting, 90° lateral pivot steps, variable rhythm punch speeds.'},
+    {name:'STAGE III: CHAMPIONSHIP CORE',range:'Ranks 7–9',cond:S.careerRank>=7,desc:'Advanced bait loops, inside phone-booth distance work, and elastic spring footwork patterns.'}
+  ].forEach(lvl=>{
+    const d=document.createElement('div');
+    d.className='tier'+(lvl.cond?' active':'');
+    d.innerHTML=`<div class="tier-hdr"><span>${lvl.name}</span><span class="tier-status">${lvl.cond?'[YOUR ACTIVE GOAL]':'[STANDBY]'}</span></div><p style="font-size:.78rem;color:var(--blue);margin-bottom:4px;">${lvl.range}</p><div class="tier-desc">${lvl.desc}</div>`;
+    c.appendChild(d);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════════════════
+function checkAchievements(){
+  let changed=false;
+  ACHIEVEMENTS.forEach(a=>{
+    if(!S.achievements.includes(a.id)&&a.check(S)){ S.achievements.push(a.id); changed=true; }
+  });
+  if(changed) save();
+}
+function renderAchievements(){
+  const c=document.getElementById('achGrid'); if(!c) return;
+  const cnt=document.getElementById('achCount');
+  if(cnt) cnt.innerText=S.achievements.length+'/'+ACHIEVEMENTS.length+' UNLOCKED';
+  c.innerHTML=ACHIEVEMENTS.map(a=>{
+    const unlocked=S.achievements.includes(a.id);
+    const prog=Math.min(a.goal,a.prog(S));
+    const pct=Math.floor(prog/a.goal*100);
+    return `<div class="ach-card${unlocked?' unlocked':''}">
+      <div class="ach-card-top">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-info">
+          <div class="ach-name">${a.name}${unlocked?' ✓':''}</div>
+          <div class="ach-desc">${a.desc}</div>
+        </div>
+      </div>
+      <div class="ach-prog-track"><div class="ach-prog-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// UI CONTROLS
+// ═══════════════════════════════════════════════════
+function goTab(id){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const btn=document.getElementById('tab-'+id); if(btn) btn.classList.add('on');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const pg=document.getElementById('page-'+id); if(pg) pg.classList.add('on');
+  if(id==='stats'){ drawRadar(); evalArchetype(); }
+  if(id==='weight') renderSparkline();
+  scrollTop();
+}
+function toggleCollapse(){
+  S.collapsed=!S.collapsed;
+  document.getElementById('hdrBody').classList.toggle('collapsed',S.collapsed);
+  document.getElementById('collapseBtn').innerText=S.collapsed?'▼':'▲';
+  save();
+}
+function changeName(){
+  const n=prompt('CHANGE CALLSIGN:',S.username);
+  if(n&&n.trim()){ S.username=n.trim().toUpperCase(); document.getElementById('callsign').innerText=S.username; save(); }
+}
+function applyNight(){ const h=new Date().getHours(); if(h>=20||h<6) document.body.classList.add('night'); }
+
+// ═══════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════
+function confettiBurst(){
+  const cv=document.getElementById('confetti'); if(!cv) return;
+  cv.width=window.innerWidth; cv.height=window.innerHeight; cv.style.display='block';
+  const ctx=cv.getContext('2d');
+  const colors=['#e74c3c','#3498db','#f1c40f','#2ecc71','#9b59b6','#e67e22'];
+  const ps=Array.from({length:100},()=>({x:Math.random()*cv.width,y:-10-Math.random()*200,vx:(Math.random()-.5)*5,vy:3+Math.random()*4,color:colors[Math.floor(Math.random()*colors.length)],size:5+Math.random()*6,rot:Math.random()*360,rotV:(Math.random()-.5)*8}));
+  let f=0;
+  (function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180); ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,1-f/85); ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size/2); ctx.restore(); p.x+=p.vx; p.y+=p.vy; p.rot+=p.rotV; });
+    f++;
+    if(f<90) requestAnimationFrame(draw);
+    else{ ctx.clearRect(0,0,cv.width,cv.height); cv.style.display='none'; }
+  })();
+}
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  loadState();
+  applyNight();
+  checkReset();
+  checkStreak();
+  applyModifier();
+  render();
+});
+</script>
+</body>
+</html>
